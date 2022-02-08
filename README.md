@@ -56,7 +56,8 @@ NOTE: These specs are not necessary for the working for the APIs.
 
 # Contribution
 I am really grateful to everyone who has contributed in any of the above specified projects, without any one of them this entire project would be much harder to made and test.
-The list of sites I visited during the making will be Biblography.md
+The list of sites I visited during the making will be Biblography.md 
+NOTE: Biblography.md will be uploaded when the project is fully completed.
 
 # Made by
 1. Abhijit Kumar Singh (Leader)
