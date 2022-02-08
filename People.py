@@ -26,5 +26,5 @@ print(private_key)
 file = open(name+"private_key.txt","w")  
 file.write(private_key)
 #Inserting the new record into the People table.
-connection.execute("INSERT INTO People (`ID`,`Name`,`Public Key`) VALUES (%s,%s,%s)",(people_id,name,public_key))
+connection.execute("INSERT INTO People (`ID`,`Name`,`Public Key`) VALUES (%s,%s,%s)"%(people_id,name,public_key))
 connector.commit()

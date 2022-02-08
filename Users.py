@@ -2,16 +2,16 @@
 #This class is filled with only the base apis. Other features maybe added in future.
 import mariadb
 
-from Banking_.API.Accounts import Account
-connector = mariadb.connect(user='User', password='User@Bank', database='Banking')
+from Accounts import Account
+connector = mariadb.connect(user='User', host="iatenoodles", password='User@Bank', database='Banking')
 connection = connector.cursor()
 class User:
     def __init__(self, user_id, password):
-        from Hashing import sha3
-        password = sha3(password)
+        from hashlib import sha3_512 as sha3
+        password = sha3(password.encode()).hexdigest()
         connection.execute("SELECT * FROM User WHERE ID = %s AND Password = %s", (user_id, password))
         if connection.fetchone() is None:
-            return "Username or password is incorrect"
+            raise ValueError("Invalid user ID or password")
         
         self.user_id = user_id
         self.hash = password
@@ -69,8 +69,8 @@ class User:
         """
         
         print("Generating account application for you...")
-        from Hashing import sha3
-        password = sha3(password)
+        from hashlib import sha3_512 as sha3
+        password = sha3(password.encode()).hexdigest()
         account_id = self.user_id + "-" + str(len(self.accounts)+1)
         connection.execute("INSERT INTO Account_Applications (ID, User_ID, Password, CreationTime) VALUES (%s, %s, %s, NOW())", (account_id, self.user_id, password))
         connector.commit()

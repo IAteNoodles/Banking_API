@@ -17,8 +17,8 @@ for row in connection.fetchall():
     staff_id = connection.fetchone()[0]
     password = input("Enter Password: ")
     #We hash the password.
-    from hashlib import sha3_512
-    password = sha3_512(password.encode()).hexdigest()
+    from hashlib import sha3_512 as sha3
+    password = sha3(password.encode()).hexdigest()
     #We insert the staff id and password into the database.
     connection.execute("INSERT INTO Staff (`People ID`,`ID`, `Password`, `Type`) VALUES (%s, %s, %s, 2)", (row[0], staff_id, password))
     connector.commit()

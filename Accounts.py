@@ -5,8 +5,8 @@ connector = mariadb.connect(user='Account',host = "localhost", password='Account
 connection = connector.cursor()
 class Account:
     def __init__(self, account_id, password):
-        from Hashing import sha3
-        password = sha3(password)
+        from hashlib import sha3_512 as sha3
+        password = sha3(password.encode()).hexdigest()
         connection.execute("SELECT * FROM Accounts WHERE ID = %s AND Password = %s", (account_id, password))
         #Checks if there is a account with the given ID and password.
         if connection.fetchone() is None:
