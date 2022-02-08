@@ -62,10 +62,10 @@ NOTE: Biblography.md will be uploaded when the project is fully completed.
 # Made by
 1. Abhijit Kumar Singh (Leader)
 2. Shashikant Yadav
-3. Khusi Yadav
+3. Khushi Yadav
 
 # Dropped repositories
-During the making, I had dropped the project many times, mainly due to lack of support to the code was too complicated to maintain. I couldn't manage them to find them all, but I think it is worth to mention them as they were the building ground of this final project.
+During the making, I had dropped the project many times, mainly due to lack of support or the code was too complicated to maintain. I couldn't manage them to find them all, but I think it is worth to mention them as they were the building ground of this final project.
 1. Banking: https://github.com/IAteNoodles/Banking
 2. Banking_CL: https://github.com/IAteNoodles/Banking_CL
 3. KV_Tinsukia_CS_Project: https://github.com/IAteNoodles/KV_Tinsukia_CS_Project
