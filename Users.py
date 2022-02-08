@@ -22,22 +22,32 @@ class User:
         self.accounts = connection.fetchone()
         self.current_account= None
     
-    def login_account(self):
+    def check_account(self):
         """
-        Logs in to an account.
+        
+        Checks if the user has any accounts, and returns True if so, else returns False.
         """
-        #Checks if there is atleast one account associated with this user.
         if self.accounts is None:
             print("You have no accounts associated with you.")
             print("Please create an account.")
             choice=input("Do you wish to create an account? (y?)")
             if choice == "y":
                 self.create_account(input("Password: "))
-                return "You can have only one application associated with you at a time. If you will try to create another application, the previous application will be overwritten."
+                print("You can have only one application associated with you at a time. If you will try to create another application, the previous application will be overwritten.")
             else:
                 print("NOTE: You can't make any transaction without opening an account first.")
                 print("Exiting...")
-                return "No account associated with the user."
+                print("No account associated with the user.")
+                return False
+        return True
+            
+    def login_account(self):
+        """
+        Logs in to an account.
+        """
+        #Checks if there is atleast one account associated with this user.
+        if not self.check_account():
+            return "You have no accounts associated with you."
             
         print("Accounts related to this user are:")
         index = 1
@@ -109,3 +119,34 @@ class User:
         connector.commit()
         print("Account application sent to the bank for approval.\nYour account number is: " + account_id)
         return "The application id for the account is: " + application_id
+
+    def delete_account(self):
+        if not self.check_account():
+            return "You have no accounts associated with you."
+        index=1
+        for account_id in self.accounts:
+            print(index, ": " + account_id)
+            index+=1
+        relative_account = int(input("Enter the account number to delete: "))
+        if relative_account > len(self.accounts) or relative_account < 2:
+            return "Invalid account number. You need to have at least 2 accounts for this operation."
+        choice=input("THIS WILL YOUR ACCOUNT, ARE YOU SURE YOU WANT TO DELETE THIS ACCOUNT? (y?)")
+        if choice == "n":
+            print("Command Aborted...")
+            return "Account not deleted."
+        print("ALL YOUR FUNDS WILL BE TRANSFERED TO THE FIRST ACCOUNT ASSOCIATED WITH YOU.")
+        choice=input("Do you wish to change the account to transfer funds to? (n?)")
+        if choice == "y":
+            account_number=input("Account number to transfer funds to: ")
+            account_id = self.accounts[account_number-1]
+        else:
+            acount_id = self.accounts[0]
+        print("Transferring funds from account: " + self.accounts[relative_account-1] + " to account: " + account_id + "...")
+        private_key=input("Please enter the private key related to you:")
+        #Fetches the public key from the People table, and matches it with the private key.
+        connection.execute("SELECT `Public Key` FROM People WHERE `Private Key` = '%s'" % private_key)
+        from Crypto.PublicKey import RSA
+        #Matches the public key with the private key.
+        RSA.importKey()
+        #TODO check if the private key is correct..
+        connection.execute("DELETE FROM Accounts WHERE ID = '%s'" % self.accounts[relative_account-1])
