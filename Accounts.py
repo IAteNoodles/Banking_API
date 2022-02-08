@@ -16,7 +16,7 @@ class Account:
         self.hash = password    
         
         #Fetches account balance from the database.
-        connection.execute("SELECT Balance FROM Accounts WHERE ID = %s", (account_id))
+        connection.execute("SELECT Balance FROM Accounts WHERE ID = '%s'" % self.account_id)
         self.balance = connection.fetchone()[0]
         
     def get_balance(self):
@@ -46,19 +46,24 @@ class Account:
         """
         #Check if the account has entered a valid mode.
         if mode == 1:
-            self.balance = self.balance + amount
+            balance = self.balance + amount
         elif mode == 0:
-            self.balance = self.balance - amount
+            balance = self.balance - amount
         else:
+            print("Invalid mode\nValid modes are: 0 for withdraw, 1 for deposit")
             return False, "Invalid transaction mode"
         
         #Check if the account has enough money to make the transaction.
-        if self.balance < 0:
+        if balance < 0:
+            print("Your account balance is: " + str(self.balance))
+            print("After this transaction your balance would be: " + str(self.balance - amount))
+            print("You do not have enough money to make this transaction.")
             return False, "Insufficient funds"
         
         #Commits the transaction to the database.
-        connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = %s", (self.balance, self.account_id))
+        connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = %s", (balance, self.account_id))
         connector.commit()
+        self.balance = balance
         return True, "New balance: %s" % self.balance
     
 #---------------------------------------------------------------- END OF CLASS -----------------------------------------------------------------#

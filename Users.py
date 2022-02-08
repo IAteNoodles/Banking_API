@@ -1,5 +1,6 @@
 #A class which can be used to access account apis.
 #This class is filled with only the base apis. Other features maybe added in future.
+from random import randbytes
 import mariadb
 
 from Accounts import Account
@@ -9,7 +10,7 @@ class User:
     def __init__(self, user_id, password):
         from hashlib import sha3_512 as sha3
         password = sha3(password.encode()).hexdigest()
-        connection.execute("SELECT * FROM User WHERE ID = %s AND Password = %s", (user_id, password))
+        connection.execute("SELECT * FROM User WHERE ID = '%s' AND Password = '%s'" % (user_id, password))
         if connection.fetchone() is None:
             raise ValueError("Invalid user ID or password")
         
@@ -17,25 +18,37 @@ class User:
         self.hash = password
         
         #Fetching the accounts linked to this user.
-        connection.execute("SELECT * FROM Accounts WHERE User_ID = %s", (user_id))
+        connection.execute("SELECT `ID` FROM Accounts WHERE `User ID` = '%s'" % (user_id))
         self.accounts = connection.fetchone()
-        self.current_account: Account
+        self.current_account= None
     
-    def login_account(self, account_id):
+    def login_account(self):
         """
         Logs in to an account.
         """
-        
-        print("Accounts related to this user are\n:")
+        #Checks if there is atleast one account associated with this user.
+        if self.accounts is None:
+            print("You have no accounts associated with you.")
+            print("Please create an account.")
+            choice=input("Do you wish to create an account? (y?)")
+            if choice == "y":
+                self.create_account(input("Password: "))
+                return "You can have only one application associated with you at a time. If you will try to create another application, the previous application will be overwritten."
+            else:
+                print("NOTE: You can't make any transaction without opening an account first.")
+                print("Exiting...")
+                return "No account associated with the user."
+            
+        print("Accounts related to this user are:")
         index = 1
         #Provides a list of the accounts linked to this user.
         for account in self.accounts:
-            print(index+": " + account)
+            print(index, ": " + account)
             index+=1
         
         #Asks the user to enter the account number to login.
         relative_account = int(input("Enter the account number to login: "))
-        if relative_account > self.accounts or relative_account < 1:
+        if relative_account > len(self.accounts) or relative_account < 1:
             return "Invalid account number"
         
         #Asks the user to enter the password to login.
@@ -44,10 +57,10 @@ class User:
         print("Logging in...")
         
         #Checks if the account and password are correct.
-        current_account = Account(self.accounts[relative_account-1], password)
+        self.current_account = Account(self.accounts[relative_account-1], password)
         #Creates an account object with the given account number.         
-        
-        print("Logged in to account: " + account_id)
+
+        print("Logged in to account: ", self.accounts[relative_account-1])
         
     def logout_account(self):
         """
@@ -71,8 +84,28 @@ class User:
         print("Generating account application for you...")
         from hashlib import sha3_512 as sha3
         password = sha3(password.encode()).hexdigest()
-        account_id = self.user_id + "-" + str(len(self.accounts)+1)
-        connection.execute("INSERT INTO Account_Applications (ID, User_ID, Password, CreationTime) VALUES (%s, %s, %s, NOW())", (account_id, self.user_id, password))
+        
+        try:
+            length = str(len(self.accounts)+1)
+        except TypeError:
+            length = "1"
+            
+        account_id = str(self.user_id + "-" + length)
+        #Pads the account id with zeroes to make it a valid account number of length 40.
+        account_id = account_id.zfill(40)
+        
+        #Checks if there is already an application for this account.
+        connection.execute("SELECT * FROM Account_Application WHERE Account_ID = '%s'" % account_id)
+        if connection.fetchone() is not None:
+            print("There is already an application for this account.")
+            print("Overwritting previous application...")
+            #Update the application with the new password and changes the CreationTime.
+            connection.execute("UPDATE Account_Application SET `CreationTime` = NOW(), `Hash` = '%s' WHERE Account_ID = '%s'" % (password, account_id))
+            connector.commit()
+            return "The previous application has been overwritten."
+        #Generates a 16 character random string for application id.
+        application_id = randbytes(8).hex()
+        connection.execute("INSERT INTO Account_Application (`ID`,`Account_ID`, `User_ID`, `Hash`, `CreationTime`) VALUES ('%s', '%s', '%s', '%s', NOW())" % (application_id, account_id, self.user_id, password))
         connector.commit()
         print("Account application sent to the bank for approval.\nYour account number is: " + account_id)
-        
+        return "The application id for the account is: " + application_id

@@ -61,7 +61,7 @@ class Staff:
         """
 
         # Fetches the application from the database and prints the details.
-        connection.execute("SELECT * FROM Account_Application WHERE ID = %")
+        connection.execute("SELECT * FROM Account_Application WHERE ID = '%s'" % application_id)
         details = connection.fetchone()
 
         # Print the details of the application. 1st column is the application_id, 2nd is the user_id, 3rd is the account_id, 4th is the hash of the password, 5th is the time of the creation.
@@ -82,7 +82,7 @@ class Staff:
             Deletes the application.
             """
             connection.execute(
-                "DELETE FROM Account_Application WHERE ID = %s", (application_id))
+                "DELETE FROM Account_Application WHERE ID = '%s'" % (application_id))
             connector.commit()
 
         if choice:
@@ -91,7 +91,7 @@ class Staff:
             print("Accepting application...")
             print("Creating new account...")
             connection.execute(
-                "INSERT INTO Accounts (`User ID`, ID, Password) VALUES (%s, %s, %s)"% (details[1], details[2], details[3]))
+                "INSERT INTO Accounts (`User ID`, `ID`, `Password`) VALUES ('%s', '%s', '%s')" % (details[1], details[2], details[3]))
             print("Account created.")
             delete_application()
             print("Deleting application...")

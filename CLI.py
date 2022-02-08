@@ -1,6 +1,49 @@
 
 #The interface to interact with the apis.
+def work_as_user(user_id, password):
+    from Users import User
+    import mariadb
+    connector = mariadb.connect(
+        user="User",passwd="User@Bank",database="Banking")
+    connection = connector.cursor()
+    
+    #Creates a new user object.
+    current_login_object=User(user_id, password)
+    print("Welcome to the User Portal")
+    print("Your the following user:" + current_login_object.user_id)
+    print("Options avaliable to you are:")
+    print("1. Log in to one of your accounts")    
+    print("2. Create a new account")
+    choice = int(input("Enter your choice: "))
+    if choice == 1:
+        current_login_object.login_account()
+        if current_login_object.current_account == None:
+            return "Please make sure that you have an account. If you already have submitted an account, please wait for the application to be verified."
 
+        
+        print("You have successfully logged in to account: ", current_login_object.current_account)
+        print("Your balance is: " + str(current_login_object.current_account.balance))
+        print("Options avaliable to you are:")
+        print("1. Withdraw money")
+        print("2. Deposit money")
+        print("3. Fetch balance")
+        print("To log out of the current account press anything else.")
+        choice = int(input("Enter your choice: "))
+        if choice == 1:
+            amount = int(input("Enter the amount to withdraw: "))
+            current_login_object.current_account.commit_transaction(amount,0)
+        elif choice == 2:
+            amount = int(input("Enter the amount to deposit: "))
+            current_login_object.current_account.commit_transaction(amount,1)
+        elif choice == 3:
+            current_login_object.current_account.get_balance()
+        else:
+            current_login_object.logout_account()
+            
+    elif choice == 2:
+        current_login_object.create_account(input("Password: "))
+        
+    
 def work_as_staff(staff_id, password):
     
     #Imports the Staff, Manager and Admin classes.
@@ -44,15 +87,12 @@ def work_as_staff(staff_id, password):
             print("4. Remove a staff")
             no_choice+=1
     
+    print("To log out of the current staff press anything else.")
     
     while(True):
         choice = input("Please enter your choice: ")
-        #if choice > no_choice:
-        """print("Invalid choice")
-        print("Exiting...")    
-        return False"""
     
-        #Uses switch case to call the appropriate function.
+        #Uses if elif else to call the appropriate function.
         if choice == "1":
             #WORKS
             people_id = input("Enter the people ID: ") #Varchar(64)
@@ -73,11 +113,13 @@ def work_as_staff(staff_id, password):
             #WORKS
             staff_id = input("Please enter the staff id: ")
             current_login_object.remove_staff(staff_id)
-        elif choice == "5":
-            break
-            
-            #print("Exiting...")
-            #return "Invalid choice"
+        
+        else:
+            print("Logging out...")
+            del current_login_object
+            print("Goodbye! The staff portal is now closed.")
+
+         # ----------------------------------------------------------------END OF STAFF PORTAL---------------------------------------------------------------------------------
         
     
 if __name__ == '__main__':
@@ -95,10 +137,10 @@ if __name__ == '__main__':
         print("Are you a user? (y/n)")
         choice = input("Enter your choice: ")
         if choice == "y":
-            user_id = input("Enter your id: ")
-            password = input("Enter your password: ")
+            user_id = "8aaa6ec9-8887-11ec-8ebc-d72018172fa6"#input("Enter your id: ")
+            password = "1"#input("Enter your password: ")
             from Users import User
-            current_login_object = User(user_id, password)
+            work_as_user(user_id, password)
         elif choice == "n":
             #To access the login page of a staff, one must know the secret key provided only to the staff. StaffHere@BankingAPI
             secret = "d9811afaf579ac04dcfd9951a520f8b15c911a943bd845a1f2080f9e0d31410061556e6559dccd2926751c8cb61ec2dd8a90e30a1edef8b330767ec28dbfff2a"
