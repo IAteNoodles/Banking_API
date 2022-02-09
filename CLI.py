@@ -137,9 +137,9 @@ if __name__ == '__main__':
     print("2: Login")
     choice = int(input("Enter your choice: "))
     if choice == 1:
-        print("Help:")
-        print("This is the help page of the Bank API.")
-        #TODO: Add more help pages.
+        from Help import get_help
+        get_help()
+        
     elif choice == 2:
         print("This is the User login page")
         print("Are you a user? (y/n)")
