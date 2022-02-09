@@ -17,9 +17,13 @@ class User:
         self.user_id = user_id
         self.hash = password
         
+        #Fetches the People ID from the Users table.
+        connection.execute("SELECT `People ID` FROM User WHERE `ID` = '%s'" % self.user_id)
+        self.people_id = connection.fetchone()[0]
+        
         #Fetching the accounts linked to this user.
         connection.execute("SELECT `ID` FROM Accounts WHERE `User ID` = '%s'" % (user_id))
-        self.accounts = connection.fetchone()
+        self.accounts = connection.fetchall()
         self.current_account= None
     
     def check_account(self):
@@ -124,12 +128,15 @@ class User:
         if not self.check_account():
             return "You have no accounts associated with you."
         index=1
+        accounts = []
         for account_id in self.accounts:
-            print(index, ": " + account_id)
+            accounts.append(account_id[0])
+            print(index, ": ", account_id[0])
             index+=1
         relative_account = int(input("Enter the account number to delete: "))
-        if relative_account > len(self.accounts) or relative_account < 2:
-            return "Invalid account number. You need to have at least 2 accounts for this operation."
+        if relative_account > len(accounts) or index-1 < 2:
+            print("Invalid account number. You need to have at least 2 accounts for this operation.")
+            return "User didn't have enough accounts."
         choice=input("THIS WILL YOUR ACCOUNT, ARE YOU SURE YOU WANT TO DELETE THIS ACCOUNT? (y?)")
         if choice == "n":
             print("Command Aborted...")
@@ -138,15 +145,27 @@ class User:
         choice=input("Do you wish to change the account to transfer funds to? (n?)")
         if choice == "y":
             account_number=input("Account number to transfer funds to: ")
-            account_id = self.accounts[account_number-1]
+            account_id = accounts[account_number-1]
         else:
-            acount_id = self.accounts[0]
-        print("Transferring funds from account: " + self.accounts[relative_account-1] + " to account: " + account_id + "...")
-        private_key=input("Please enter the private key related to you:")
+            account_id = accounts[1] if relative_account == 1 else accounts[0]
+        print("Transferring funds from account: " + accounts[relative_account-1] + " to account: " + account_id + "...")
+        path_private_key=open("TestingPprivate_key.pem")#"Please enter path of your private key:"))
         #Fetches the public key from the People table, and matches it with the private key.
-        connection.execute("SELECT `Public Key` FROM People WHERE `Private Key` = '%s'" % private_key)
         from Crypto.PublicKey import RSA
+        temp=path_private_key.read()
+        #Convert temp to bytes.
+        temp=temp.encode('utf-8')
+        private_key = RSA.import_key(temp)
+
+        
         #Matches the public key with the private key.
-        RSA.importKey()
+        public_key = private_key.publickey().export_key()
         #TODO check if the private key is correct..
-        connection.execute("DELETE FROM Accounts WHERE ID = '%s'" % self.accounts[relative_account-1])
+        
+        connection.execute("SELECT `Public Key` FROM People WHERE `ID` = '%s'" % self.people_id)
+        if connection.fetchone()[0] == public_key:
+            print("Invalid private key.")
+            print("Command Aborted...")
+            return False
+        connection.execute("DELETE FROM Accounts WHERE ID = '%s'" % accounts[relative_account-1])
+        connector.commit()

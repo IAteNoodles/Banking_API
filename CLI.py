@@ -14,6 +14,7 @@ def work_as_user(user_id, password):
     print("Options avaliable to you are:")
     print("1. Log in to one of your accounts")    
     print("2. Create a new account")
+    print("3. Delete a account")
     choice = int(input("Enter your choice: "))
     if choice == 1:
         current_login_object.login_account()
@@ -42,6 +43,13 @@ def work_as_user(user_id, password):
             
     elif choice == 2:
         current_login_object.create_account(input("Password: "))
+    elif choice == 3:
+        current_login_object.delete_account()
+    else:
+        print("Logging out...")
+        del current_login_object
+        print("Goodbye! The user portal is now closed.")
+        return
         
     
 def work_as_staff(staff_id, password):
@@ -137,7 +145,7 @@ if __name__ == '__main__':
         print("Are you a user? (y/n)")
         choice = input("Enter your choice: ")
         if choice == "y":
-            user_id = "8aaa6ec9-8887-11ec-8ebc-d72018172fa6"#input("Enter your id: ")
+            user_id = "d53e3ba4-89c0-11ec-8eb3-d71f150f0903"#input("Enter your id: ")
             password = "1"#input("Enter your password: ")
             from Users import User
             work_as_user(user_id, password)
