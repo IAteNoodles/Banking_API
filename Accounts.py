@@ -26,7 +26,7 @@ class Account:
                 
         Retuns: The current balance of the account.
         """
-        connection.execute("SELECT balance FROM Accounts WHERE ID = %s", (self.account_id))
+        connection.execute("SELECT Balance FROM Accounts WHERE ID = '%s'" % self.account_id)
         self.balance = connection.fetchone()[0]
         return self.balance
             
@@ -61,7 +61,7 @@ class Account:
             return False, "Insufficient funds"
         
         #Commits the transaction to the database.
-        connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = %s", (balance, self.account_id))
+        connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = '%s'" % (balance, self.account_id))
         connector.commit()
         self.balance = balance
         return True, "New balance: %s" % self.balance

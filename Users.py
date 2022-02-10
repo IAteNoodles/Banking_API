@@ -57,7 +57,7 @@ class User:
         index = 1
         #Provides a list of the accounts linked to this user.
         for account in self.accounts:
-            print(index, ": " + account)
+            print(index, ": " + account[0])
             index+=1
         
         #Asks the user to enter the account number to login.
@@ -71,10 +71,10 @@ class User:
         print("Logging in...")
         
         #Checks if the account and password are correct.
-        self.current_account = Account(self.accounts[relative_account-1], password)
+        self.current_account = Account(self.accounts[relative_account-1][0], password)
         #Creates an account object with the given account number.         
 
-        print("Logged in to account: ", self.accounts[relative_account-1])
+        print("Logged in to account: ", self.accounts[relative_account-1][0])
         
     def logout_account(self):
         """
@@ -98,15 +98,8 @@ class User:
         print("Generating account application for you...")
         from hashlib import sha3_512 as sha3
         password = sha3(password.encode()).hexdigest()
-        
-        try:
-            length = str(len(self.accounts)+1)
-        except TypeError:
-            length = "1"
-            
-        account_id = str(self.user_id + "-" + length)
-        #Pads the account id with zeroes to make it a valid account number of length 40.
-        account_id = account_id.zfill(40)
+        #Generates a random account number.
+        account_id = randbytes(20).hex()    
         
         #Checks if there is already an application for this account.
         connection.execute("SELECT * FROM Account_Application WHERE Account_ID = '%s'" % account_id)
@@ -116,13 +109,23 @@ class User:
             #Update the application with the new password and changes the CreationTime.
             connection.execute("UPDATE Account_Application SET `CreationTime` = NOW(), `Hash` = '%s' WHERE Account_ID = '%s'" % (password, account_id))
             connector.commit()
-            return "The previous application has been overwritten."
+            print("The previous application has been overwritten.")
+            
+            return 
         #Generates a 16 character random string for application id.
         application_id = randbytes(8).hex()
-        connection.execute("INSERT INTO Account_Application (`ID`,`Account_ID`, `User_ID`, `Hash`, `CreationTime`) VALUES ('%s', '%s', '%s', '%s', NOW())" % (application_id, account_id, self.user_id, password))
+        while(True):
+                try:
+                    connection.execute("INSERT INTO Account_Application (`ID`,`Account_ID`, `User_ID`, `Hash`, `CreationTime`) VALUES ('%s', '%s', '%s', '%s', NOW())" % (application_id, account_id, self.user_id, password))
+                except mariadb.IntegrityError:
+                    #Fails as the account number is already taken.
+                    #Generates a new account number.
+                    account_id = randbytes(20).hex()   
+                finally:
+                    break 
         connector.commit()
         print("Account application sent to the bank for approval.\nYour account number is: " + account_id)
-        return "The application id for the account is: " + application_id
+        print("The application id for the account is: " + application_id)
 
     def delete_account(self):
         if not self.check_account():
@@ -149,7 +152,7 @@ class User:
         else:
             account_id = accounts[1] if relative_account == 1 else accounts[0]
         print("Transferring funds from account: " + accounts[relative_account-1] + " to account: " + account_id + "...")
-        path_private_key=open("TestingPprivate_key.pem")#"Please enter path of your private key:"))
+        path_private_key=open(input("Path to private key: "))#"Please enter path of your private key:"))
         #Fetches the public key from the People table, and matches it with the private key.
         from Crypto.PublicKey import RSA
         temp=path_private_key.read()

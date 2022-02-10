@@ -11,45 +11,48 @@ def work_as_user(user_id, password):
     current_login_object=User(user_id, password)
     print("Welcome to the User Portal")
     print("Your the following user:" + current_login_object.user_id)
-    print("Options avaliable to you are:")
-    print("1. Log in to one of your accounts")    
-    print("2. Create a new account")
-    print("3. Delete a account")
-    choice = int(input("Enter your choice: "))
-    if choice == 1:
-        current_login_object.login_account()
-        if current_login_object.current_account == None:
-            return "Please make sure that you have an account. If you already have submitted an account, please wait for the application to be verified."
-
-        
-        print("You have successfully logged in to account: ", current_login_object.current_account)
-        print("Your balance is: " + str(current_login_object.current_account.balance))
+    while(True):
         print("Options avaliable to you are:")
-        print("1. Withdraw money")
-        print("2. Deposit money")
-        print("3. Fetch balance")
-        print("To log out of the current account press anything else.")
+        print("1. Log in to one of your accounts")    
+        print("2. Create a new account")
+        print("3. Delete a account")
+        print("Anything else to log out")
         choice = int(input("Enter your choice: "))
         if choice == 1:
-            amount = int(input("Enter the amount to withdraw: "))
-            current_login_object.current_account.commit_transaction(amount,0)
+            current_login_object.login_account()
+            if current_login_object.current_account == None:
+                return "Please make sure that you have an account. If you already have submitted an account, please wait for the application to be verified."
+
+            while(True):
+                print("You have successfully logged in to account: ", current_login_object.current_account.account_id)
+                print("Your balance is: " + str(current_login_object.current_account.balance))
+                print("Options avaliable to you are:")
+                print("1. Withdraw money")
+                print("2. Deposit money")
+                print("3. Fetch balance")
+                print("To log out of the current account press anything else.")
+                choice = input("Enter your choice: ")
+                if choice == "1":
+                    amount = int(input("Enter the amount to withdraw: "))
+                    current_login_object.current_account.commit_transaction(amount,0)
+                elif choice == "2":
+                    amount = int(input("Enter the amount to deposit: "))
+                    current_login_object.current_account.commit_transaction(amount,1)
+                elif choice == "3":
+                    current_login_object.current_account.get_balance()
+                else:
+                    current_login_object.logout_account()
+                    break;
+                
         elif choice == 2:
-            amount = int(input("Enter the amount to deposit: "))
-            current_login_object.current_account.commit_transaction(amount,1)
+            current_login_object.create_account(input("Password: "))
         elif choice == 3:
-            current_login_object.current_account.get_balance()
+            current_login_object.delete_account()
         else:
-            current_login_object.logout_account()
-            
-    elif choice == 2:
-        current_login_object.create_account(input("Password: "))
-    elif choice == 3:
-        current_login_object.delete_account()
-    else:
-        print("Logging out...")
-        del current_login_object
-        print("Goodbye! The user portal is now closed.")
-        return
+            print("Logging out...")
+            del current_login_object
+            print("Goodbye! The user portal is now closed.")
+            return
         
     
 def work_as_staff(staff_id, password):
@@ -82,34 +85,42 @@ def work_as_staff(staff_id, password):
     print("Your the following staff:" + current_login_object.user_id + "of type:" + str(current_login_object.get_type()))
     print("Options avaliable to you are:")
     
-    no_choice = 2
-    print("1. Create a user")
-    print("2. Change an application")
+    options = []
+    options.append("1. Create a user")
+    options.append("2. Change an application")
     
     #Checks if the current_login_object is instance of Manager.
     if current_login_object.type >=1:
-        print("3. Add a staff")
-        no_choice+=1
+        options.append("3. Add a staff")
         #Checks if the current_login_object is instance of Admin.
         if current_login_object.type==2:
-            print("4. Remove a staff")
-            no_choice+=1
+            options.append("4. Remove a staff")
     
-    print("To log out of the current staff press anything else.")
     
     while(True):
+        
+        print("You options are: ")
+        for option in options:
+            print(option)
+        print("To log out of the current staff press anything else.")
+
+        
         choice = input("Please enter your choice: ")
     
         #Uses if elif else to call the appropriate function.
+        
         if choice == "1":
             #WORKS
             people_id = input("Enter the people ID: ") #Varchar(64)
             user_id = input("Please enter the user id: ") #Varchar(36) - UUID
             hashed_passwd = input("Please enter the hashed password: ") #Varchar(128)
             current_login_object.add_user(people_id, user_id, hashed_passwd)
+            
         elif choice == "2":
+            #WORKS
             application_id = input("Please enter the application id: ")
             current_login_object.change_application(application_id)
+            
         elif choice == "3":
             #WORKS
             people_id = input("Enter the people ID: ") #Varchar(64)
@@ -117,6 +128,7 @@ def work_as_staff(staff_id, password):
             hashed_passwd = input("Please enter the hashed password: ")
             staff_type = int(input("0: Staff, 1: Manager, 2: Admin:\nEnter the staff type: "))
             current_login_object.add_staff(people_id, staff_id, hashed_passwd, staff_type)
+            
         elif choice == "4":
             #WORKS
             staff_id = input("Please enter the staff id: ")
@@ -126,6 +138,7 @@ def work_as_staff(staff_id, password):
             print("Logging out...")
             del current_login_object
             print("Goodbye! The staff portal is now closed.")
+            return 
 
          # ----------------------------------------------------------------END OF STAFF PORTAL---------------------------------------------------------------------------------
         
@@ -142,14 +155,14 @@ if __name__ == '__main__':
         
     elif choice == 2:
         print("This is the User login page")
-        print("Are you a user? (y/n)")
+        print("Are you a user? (y?)")
         choice = input("Enter your choice: ")
         if choice == "y":
             user_id = "d53e3ba4-89c0-11ec-8eb3-d71f150f0903"#input("Enter your id: ")
             password = "1"#input("Enter your password: ")
             from Users import User
             work_as_user(user_id, password)
-        elif choice == "n":
+        else:
             #To access the login page of a staff, one must know the secret key provided only to the staff. StaffHere@BankingAPI
             secret = "d9811afaf579ac04dcfd9951a520f8b15c911a943bd845a1f2080f9e0d31410061556e6559dccd2926751c8cb61ec2dd8a90e30a1edef8b330767ec28dbfff2a"
             key = input("Enter the secret key")
@@ -163,6 +176,3 @@ if __name__ == '__main__':
             else:
                 print("Invalid secret key")
                 print("Exiting...")
-        else:
-            print("Invalid choice")
-            print("Exiting...")
