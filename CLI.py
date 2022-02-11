@@ -19,10 +19,31 @@ def work_as_user(user_id, password):
         print("Anything else to log out")
         choice = int(input("Enter your choice: "))
         if choice == 1:
-            current_login_object.login_account()
+            
+            #Checks if there is atleast one account associated with this user.
+            if not current_login_object.check_account():
+                print("You have no account associated with you.\nTo log in, please make an account first")
+                continue
+            print("Accounts related to this user are:")
+            index = 1
+            #Provides a list of the accounts linked to this user.
+            for account in current_login_object.accounts:
+                print(index, ": " + account[0])
+                index+=1
+            
+            #Asks the user to enter the account number to login.
+            relative_account = int(input("Enter the account number to login: "))
+            if relative_account > len(current_login_object.accounts) or relative_account < 1:
+                return "Invalid account number"
+            
+            #Asks the user to enter the password to login.
+            password = input("Enter the password to login: ")
+            
+            print("Logging in...")
+            current_login_object.login_account(current_login_object.accounts[relative_account-1][0],password)
             if current_login_object.current_account == None:
                 return "Please make sure that you have an account. If you already have submitted an account, please wait for the application to be verified."
-
+            print("Logged in to account: ", account)
             while(True):
                 print("You have successfully logged in to account: ", current_login_object.current_account.account_id)
                 print("Your balance is: " + str(current_login_object.current_account.balance))
@@ -47,7 +68,35 @@ def work_as_user(user_id, password):
         elif choice == 2:
             current_login_object.create_account(input("Password: "))
         elif choice == 3:
-            current_login_object.delete_account()
+            
+            if not current_login_object.check_account():
+                return "You have no accounts associated with you."
+            index=1
+            accounts = []
+            for account_id in current_login_object.accounts:
+                accounts.append(account_id[0])
+                print(index, ": ", account_id[0])
+                index+=1
+            relative_account = int(input("Enter the account number to delete: "))
+            if relative_account > len(accounts) or index-1 < 2:
+                print("Invalid account number. You need to have at least 2 accounts for this operation.")
+                return "User didn't have enough accounts."
+            choice=input("THIS WILL YOUR ACCOUNT, ARE YOU SURE YOU WANT TO DELETE THIS ACCOUNT? (y?)")
+            if choice == "n":
+                print("Command Aborted...")
+            
+            password = input("Password of the account: ")            
+            print("ALL YOUR FUNDS WILL BE TRANSFERED TO THE FIRST ACCOUNT ASSOCIATED WITH YOU.")
+            choice=input("Do you wish to change the account to transfer funds to? (n?)")
+            if choice == "y":
+                account_number=input("Account number to transfer funds to: ")
+                account_id = accounts[account_number-1]
+            else:
+                account_id = accounts[1] if relative_account == 1 else accounts[0]
+            print("Transferring funds from account: " + accounts[relative_account-1] + " to account: " + account_id + "...")
+            private_key=open(input("Path to private key: "))
+            current_login_object.delete_account(accounts[relative_account-1], password, account_id, private_key)
+            
         else:
             print("Logging out...")
             del current_login_object
@@ -118,7 +167,16 @@ def work_as_staff(staff_id, password):
             
         elif choice == "2":
             #WORKS
-            application_id = input("Please enter the application id: ")
+            choice = input("Do you want to list every application opened at present? (y?)")
+            if choice == "n":
+                application_id = input("Please enter the application id: ")
+            else:
+                connection.execute("SELECT `ID`, `User_ID`, `CreationTime`  FROM Application")
+                application_ids = connection.fetchall()
+                index = 1
+                for application_id in application_ids:
+                    print(application_id)
+                
             current_login_object.change_application(application_id)
             
         elif choice == "3":

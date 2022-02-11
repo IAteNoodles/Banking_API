@@ -22,6 +22,7 @@ class Staff:
         self.type = 0
         print("Logged in as staff with ID %s and type %s" %
               (self.user_id, self.type))
+        
 
     def get_type(self): 
         return "Staff" if self.type == 0 else "Manager" if self.type == 1 else "Admin"
@@ -48,13 +49,14 @@ class Staff:
         connector.commit()
         print("Added user with ID %s" % user_id)
 
-    def change_application(self, application_id):
+    def change_application(self, application_id: str, accept: bool):
         """
 
         Commits changes to the application.
 
         Args:
             application_id(int): The application ID.
+            accept(bool): True if the application is accepted, False if rejected.
 
         Returns:
             True if the actions were executed successfully, else False.
@@ -70,12 +72,6 @@ class Staff:
         print("Account ID: " + str(details[2]))
         print("Created at: " + str(details[4]))
 
-        # Asks if the staff wants to accept the application.
-        try:
-            choice = bool(input("Accept application? (y/n): "))
-        except ValueError:
-            print("Invalid input")
-            return False
 
         def delete_application():
             """
@@ -85,7 +81,7 @@ class Staff:
                 "DELETE FROM Account_Application WHERE ID = '%s'" % (application_id))
             connector.commit()
 
-        if choice:
+        if accept:
             # If yes, the application is accepted.
             # Creates a new account in the Accounts table with the hashed password
             print("Accepting application...")
@@ -96,12 +92,14 @@ class Staff:
             delete_application()
             print("Deleting application...")
             print("Application deleted.")
+            connector.commit()
             return True
         else:
             # If no, the application is rejected.
             delete_application()
             print("Rejecting application...")
             print("Application deleted.")
+            connector.commit()
             return True
 
 
@@ -122,13 +120,14 @@ class Manager(Staff):
         """
         if staff_type > self.type:
             print("You are not authorized to add this staff")
-            return "Exiting..."
+            print("Exiting...")
+            return False
         print("Adding staff...")
         connection.execute("INSERT INTO Staff (`People ID`, `ID`, `Password`, `Type`) VALUES ('%s', '%s', '%s', %s)" %
                            (people_id, staff_id, hashed_passwd, staff_type))
         connector.commit()
         print("Added staff with ID %s" % staff_id + " and type %s" % staff_type)
-
+        return True
 
 class Admin(Manager):
     def __init__(self, user_id, password):
@@ -142,12 +141,15 @@ class Admin(Manager):
         Args:
             staff_id: ID of the staff.
         """
-        print("This will remove staff with ID %s" % staff_id)
-        check = input("Are you sure? (y/n): ")
-        if check == "n":
+        connection.execute("SELECT `Type` FROM Staff WHERE ID = '%s'" % staff_id)
+        if connection.fetchone()[0] > self.type:
+            print("You are not authorized to remove this staff")
             print("Exiting...")
-            return "Command aborted."
+            return False
+        print("This will remove staff with ID %s" % staff_id)
         print("Removing staff...")
         connection.execute("DELETE FROM Staff WHERE ID = '%s'" % staff_id)
         connector.commit()
+        
         print("Removed staff with ID %s" % staff_id)
+        return True

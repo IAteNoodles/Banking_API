@@ -1,5 +1,6 @@
 #A class which can be used to access account apis.
 #This class is filled with only the base apis. Other features maybe added in future.
+from hashlib import new
 import mariadb
 connector = mariadb.connect(user='Account',host = "localhost", password='Account@Bank', database='Banking')
 connection = connector.cursor()
@@ -9,8 +10,9 @@ class Account:
         password = sha3(password.encode()).hexdigest()
         connection.execute("SELECT * FROM Accounts WHERE ID = %s AND Password = %s", (account_id, password))
         #Checks if there is a account with the given ID and password.
+        
         if connection.fetchone() is None:
-            return "ID or password is incorrect"
+            self.connection = False    
 
         self.account_id = account_id
         self.hash = password    
@@ -18,6 +20,7 @@ class Account:
         #Fetches account balance from the database.
         connection.execute("SELECT Balance FROM Accounts WHERE ID = '%s'" % self.account_id)
         self.balance = connection.fetchone()[0]
+        self.connection = True
         
     def get_balance(self):
         """
@@ -66,6 +69,31 @@ class Account:
         self.balance = balance
         return True, "New balance: %s" % self.balance
     
+    def send_money(self, reciever, amount):
+        """
+        Sends money to the recipient.
+        
+        Args:
+            reciever(str): The accound id of the recipient.
+            amount(int): The amount to send.
+            
+        Returns:
+            True if the transaction was successful, else false.
+        """
+        if self.get_balance() - amount < 0:
+            return False
+        
+        connection.execute("SELECT Balance FROM Accounts WHERE ID = '%s'" % reciever)
+        new_balance = connection.fetchone()[0] + amount
+        #Send money to the recipient.
+        connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = '%s'" % (new_balance, reciever))
+        #Update the sender's balance.
+        connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = '%s'" % (self.balance - amount, self.account_id))
+        #Commit the transaction.
+        connector.commit()
+        #Update the sender's balance.
+        self.get_balance()
+        return True
 #---------------------------------------------------------------- END OF CLASS -----------------------------------------------------------------#
         
         
