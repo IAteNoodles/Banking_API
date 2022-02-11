@@ -51,6 +51,7 @@ def work_as_user(user_id, password):
                 print("1. Withdraw money")
                 print("2. Deposit money")
                 print("3. Fetch balance")
+                print("4. Transfer money")
                 print("To log out of the current account press anything else.")
                 choice = input("Enter your choice: ")
                 if choice == "1":
@@ -61,6 +62,14 @@ def work_as_user(user_id, password):
                     current_login_object.current_account.commit_transaction(amount,1)
                 elif choice == "3":
                     current_login_object.current_account.get_balance()
+                elif choice == "4":
+                    transfering_account_id = input("Enter the account id to transfer to: ")
+                    amount = int(input("Enter the amount to transfer: "))
+                    if current_login_object.current_account.send_money(transfering_account_id,amount):
+                        print("Money transfered successfully")
+                    else:
+                        print("Error in transfering money")
+                    
                 else:
                     current_login_object.logout_account()
                     break;
@@ -125,9 +134,6 @@ def work_as_staff(staff_id, password):
         print("Invalid staff type")
         return "Exiting..."
     
-    #Closes the connection and deletes the connector.
-    connector.close()
-    del connector, connection
     
     
     print("Welcome to the Staff Portal")
@@ -171,18 +177,26 @@ def work_as_staff(staff_id, password):
             if choice == "n":
                 application_id = input("Please enter the application id: ")
             else:
-                connection.execute("SELECT `ID`, `User_ID`, `CreationTime`  FROM Application")
+                connection.execute("SELECT `ID`, `User_ID`, `CreationTime`  FROM Account_Application")
                 application_ids = connection.fetchall()
                 index = 1
-                for application_id in application_ids:
-                    print(application_id)
                 
-            current_login_object.change_application(application_id)
+                #Checks if there are any opened applications
+                if len(application_ids) ==0:
+                    print("There are no applications opened at present.")
+                    continue
+                
+                for application_id in application_ids:
+                    print(index,": ",application_id)
+                    
+                application_id = input("Please enter the application id: ")
+                accept = True if input("Do you want to accept this application? (y?)") == "y" else False
+            current_login_object.change_application(application_id, accept)
             
         elif choice == "3":
             #WORKS
             people_id = input("Enter the people ID: ") #Varchar(64)
-            staff_id = input("Please enter the staff id: ")
+            staff_id = input("Please enter the staff id: ") 
             hashed_passwd = input("Please enter the hashed password: ")
             staff_type = int(input("0: Staff, 1: Manager, 2: Admin:\nEnter the staff type: "))
             current_login_object.add_staff(people_id, staff_id, hashed_passwd, staff_type)

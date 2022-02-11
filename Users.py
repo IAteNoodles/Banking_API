@@ -23,8 +23,8 @@ class User:
         
         #Fetching the accounts linked to this user.
         connection.execute("SELECT `ID` FROM Accounts WHERE `User ID` = '%s'" % (user_id))
-        connection.fetchall()
-        self.accounts = connection.rowcount
+        self.accounts = connection.fetchall()
+        self.accounts_no = connection.rowcount
         self.current_account= None
     
     def check_account(self):
@@ -32,10 +32,10 @@ class User:
         
         Checks if the user has any accounts, and returns True if so, else returns False.
         """
-        if self.accounts == 0:
+        if self.accounts_no == 0:
             return False
         return True
-            
+
     def login_account(self, account, password):
         """
         Logs in to an account.
@@ -131,6 +131,8 @@ class User:
         account_connection = Account(account, password)
         current_balance = account_connection.get_balance()
         sent = account_connection.send_money(reciever, current_balance)
+        self.accounts.remove(account)
+        self.accounts_no -= 1
         if sent:
             connection.execute("DELETE FROM Accounts WHERE ID = '%s'" % account)
             connector.commit()
