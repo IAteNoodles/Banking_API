@@ -1,3 +1,4 @@
+import json
 from random import randbytes
 from secrets import randbits
 
@@ -145,6 +146,17 @@ def populate(connector, connection):
     connector.commit()
     print("------------------------------------------------------")
     print("Populated Database over")
+    data = json.dumps(people_data, sort_keys=True, indent=5)
+    open(r"./config/people_data.txt", "w").write(data)
+    """
+    Format for data:
+        name = people_id,
+        user_id,
+        password,
+        account_id,
+        application_id
+    """
+
 
 if __name__ == "__main__":
     connector, connection = start_server("IAteNoodles","CrazyxNoob@69","Banking")#(input("Username: "), input("Password:"), input("Database: "))

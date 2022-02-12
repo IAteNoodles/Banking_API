@@ -2,11 +2,6 @@
 #The interface to interact with the apis.
 def work_as_user(user_id, password):
     from Users import User
-    import mariadb
-    connector = mariadb.connect(
-        user="User",passwd="User@Bank",database="Banking")
-    connection = connector.cursor()
-    
     #Creates a new user object.
     current_login_object=User(user_id, password)
     print("Welcome to the User Portal")
@@ -167,7 +162,7 @@ def work_as_staff(staff_id, password):
         if choice == "1":
             #WORKS
             people_id = input("Enter the people ID: ") #Varchar(64)
-            user_id = input("Please enter the user id: ") #Varchar(36) - UUID
+            user_id = input("Please enter the user id: ") #Varchar(36) 
             hashed_passwd = input("Please enter the hashed password: ") #Varchar(128)
             current_login_object.add_user(people_id, user_id, hashed_passwd)
             
@@ -196,7 +191,7 @@ def work_as_staff(staff_id, password):
         elif choice == "3":
             #WORKS
             people_id = input("Enter the people ID: ") #Varchar(64)
-            staff_id = input("Please enter the staff id: ") 
+            staff_id = input("Please enter the staff id: ") #Varchar(36) 
             hashed_passwd = input("Please enter the hashed password: ")
             staff_type = int(input("0: Staff, 1: Manager, 2: Admin:\nEnter the staff type: "))
             current_login_object.add_staff(people_id, staff_id, hashed_passwd, staff_type)
@@ -230,21 +225,13 @@ if __name__ == '__main__':
         print("Are you a user? (y?)")
         choice = input("Enter your choice: ")
         if choice == "y":
-            user_id = "d53e3ba4-89c0-11ec-8eb3-d71f150f0903"#input("Enter your id: ")
-            password = "1"#input("Enter your password: ")
+            user_id = input("Enter your id: ")
+            password = input("Enter your password: ")
             from Users import User
             work_as_user(user_id, password)
         else:
-            #To access the login page of a staff, one must know the secret key provided only to the staff. StaffHere@BankingAPI
-            secret = "d9811afaf579ac04dcfd9951a520f8b15c911a943bd845a1f2080f9e0d31410061556e6559dccd2926751c8cb61ec2dd8a90e30a1edef8b330767ec28dbfff2a"
-            key = input("Enter the secret key")
-            from hashlib import sha3_512 as sha3
-            key = sha3(key.encode()).hexdigest()
-            if True:#key == secret:
-                print("This is the staff login page")
-                staff_id = "c66377e6-883d-11ec-8f55-d92738a284b2"#input("Enter your id: ") #Varchar(36) - UUID
-                password = "1"#input("Enter your password: ") #Varchar(128)
-                work_as_staff(staff_id, password)
-            else:
-                print("Invalid secret key")
-                print("Exiting...")
+            print("This is the staff login page")
+            staff_id = input("Enter your id: ") #Varchar(36) 
+            password = input("Enter your password: ") #Varchar(128)
+            work_as_staff(staff_id, password)
+        
