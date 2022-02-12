@@ -113,7 +113,7 @@ class User:
         connector.commit()
         print("Account application sent to the bank for approval.\nYour account number is: " + account_id)
         print("The application id for the account is: " + application_id)
-        return application_id, account_id
+        return account_id, application_id
 
     def delete_account(self, account, password, reciever, private_key, confirm = False):
         #"Please enter path of your private key:"))

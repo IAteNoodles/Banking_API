@@ -3,6 +3,7 @@
 #Second column is the name
 #Third column is the public key to the generated RSA key pair. This private key is not stored in the database, but is returned to the user. 
 import os
+from random import randbytes
 import mariadb
 
 
@@ -36,7 +37,7 @@ def generate(name: str):
     """
     
     #Generate a random 32 character ID
-    people_id = os.urandom(32).hex()
+    people_id = randbytes(32).hex()
     public_key = generate_keypair(name) #Generating a new key pair
 
     #Inserting the new record into the People table.
