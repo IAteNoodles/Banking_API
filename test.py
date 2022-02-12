@@ -1,4 +1,6 @@
 #This class will test if all the APIs are working as intended.
+from calendar import c
+import os
 from random import randbytes
 import sys
 from People import generate
@@ -19,20 +21,21 @@ connector.commit()
 #Checking that People clas is working as intended.
 list_of_people: tuple = ("Charles",
                   "Winnie",
-                  "Micheal")
-                  #""""Charlie",
-                  #"William",
-                  #"Bertie",
-                  #"Juan",
-                  #"Iva",
-                  #"Adelaide",
-                  #"Ada",
-                  #"Daniel",
-                  #"Christina",
-                  #"Lilly",
-                  #"Isaiah",
-                  #"Marguerite",
-                  #"Gary")"""
+                  "Micheal",
+                  "Charlie",
+                  "William",
+                  "Bertie",
+                  "Juan",
+                  "Iva",
+                  "Adelaide",
+                  "Ada",
+                  "Daniel",
+                  "Christina",
+                  "Lilly",
+                  "Isaiah",
+                  "Marguerite",
+                  "Gary")
+                 
 
 print("Inserting into the database using the People.generate() function")
 list_of_ids = []
@@ -62,7 +65,7 @@ test_user = {
     }
 
 print("Connecting with ROOT@Bank...")
-from Staffs import Staff, Manager, Admin
+from Staffs import  Admin
 
 test_user["object"] = Admin(test_user["staff_id"], test_user["passwd"])
 
@@ -124,16 +127,26 @@ for user in random_user_info:
     user_connection = User(user, random_user_info[user])
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("Checking if there exists an account with the user")
-    if not user_connection.check_account():
+    if user_connection.get_accounts() == 0:
         print("User has no accounts registered. Creating a new account application...")
-        password = randbytes(16).hex()
-        application_id, account_id  = user_connection.create_account(password)
-        print("Created an application for " + user)
-        print("Application id: " + application_id)
-        print("Account id: " + account_id)
-        print("Password: " + password)
-        applications.append(application_id)
-        account_info[account_id] = password
+
+        def create_account():
+            password = randbytes(16).hex()
+            application_id, account_id  = user_connection.create_account(password)
+            print("Created an application for " + user)
+            print("Application id: " + application_id)
+            print("Account id: " + account_id)
+            print("Password: " + password)
+            applications.append(application_id)
+            account_info[account_id] = password
+        
+        #Adding 1st account
+        create_account()
+        #Adding 2nd account
+        create_account()
+
+        
+        
 
 print("Accepting all the applications...")
 no_of_applications_accepted = 0
@@ -154,7 +167,7 @@ if len(applications) - no_of_applications_accepted > 5:
 print("Test passed: BANKING@ADMIN is able to accept the applications.")
 if len(applications) - no_of_applications_accepted != 0:
     #Prints the amount of applications not accepted as error.
-    sys.stderr("Waring: %d/%d applications not accepted." % (len(applications) - no_of_applications_accepted, len(applications)))   
+    sys.stderr.write("Waring: %d/%d applications not accepted." % (len(applications) - no_of_applications_accepted, len(applications)))   
 
 print("Addming a bunch of staffs to the Bank...")    
 
@@ -166,7 +179,7 @@ for id in list_of_ids:
     type_staff = 0 if count % 2 == 0 else 1
     status = new_admin_connection.add_staff(id, staff_id, hash_passwd, type_staff)   
     if not status:
-        sys.stderr("BANKING@ADMIN is not able to add staff " + id)
+        sys.stderr.write("BANKING@ADMIN is not able to add staff " + id)
     else:
         print("Added staff " + id + " with id: " + staff_id + ", type: ", type_staff, ", and password: " + password)
         count += 1
@@ -177,7 +190,7 @@ if len(list_of_ids) - count > 5:
 
 print("Test passed: BANKING@ADMIN is able to add the staffs.")
 if len(list_of_ids) - count != 0:
-    sys.stderr("Waring: %d/%d staffs not added." % (len(list_of_ids) - count, len(list_of_ids)))
+    sys.stderr.write("Waring: %d/%d staffs not added." % (len(list_of_ids) - count, len(list_of_ids)))
 
     
 print("Removing ROOT@BANK from the database...")
@@ -190,3 +203,116 @@ else:
     
 print("--------------------------------------------------------------------------------")
 print("Test passed: Staff APIs are working as intended.")
+
+#Test for the User APIs
+print("--------------------------------------------------------------------------------")
+print("Testing User APIs...")
+print("Test Passed: Creating a new user")
+print("Test Passed: Checking if user has an account")
+print("Test Passed: Creating a new account associated with the user")
+
+#USERS
+
+count_login = 0
+count_logout = 0
+count_delete = 0
+TESTING_ACCOUNT = "a47d9f6d-8ba5-11ec-8e63-d61b05c5cfbb1234"
+#Password is 1
+#ACCOUNTS
+count_mismatch_balance = 0
+count_failed_transactions = 0
+for user in random_user_info:
+    user_connection = User(user, random_user_info[user])
+    print("Fecthing the user's accounts...")
+    accounts = user_connection.get_accounts()
+    if len(accounts) !=0:
+        sys.stdout.write("User already has an account")
+        sys.exit()
+
+    print("Checking if user can log into account...")
+    for account in accounts:
+        if not user_connection.login_account(account, account_info[account]):
+            print("Unable to login into account " + account)
+            count_login += 1
+            continue
+        print("Logged into account " + account)
+        #Fetching balance
+        if user_connection.current_account.get_balance() != 0:
+            count_mismatch_balance += 1
+            sys.stderr.write("Waring: Balance mismatch for account " + account)
+        
+        #Depositing 1000 to the account.
+        if user_connection.current_account.commit_transaction(1000, 1):
+            print("Depositing 1000 to account: %s " %account)
+            if user_connection.current_account.get_balance() != 1000:
+                count_failed_transactions += 1
+                count_mismatch_balance += 1
+                sys.stderr.write("Waring: Balance mismatch for account " + account)
+        else:
+            sys.stderr.write("Failed to deposit 1000 to account: %s " %account)
+            count_failed_transactions += 1
+        #Sending money to TESTING_ACCOUNT 
+        if not user_connection.current_account.send_money(TESTING_ACCOUNT, 500):
+            count_failed_transactions += 1
+            sys.stderr.write("Failed to send 500 to account: %s " %TESTING_ACCOUNT) 
+        #Withdrawing 500 from the account.
+        if user_connection.current_account.commit_transaction(500, 0):
+            print("Withdrawing 1000 from account: %s " %account)
+            if user_connection.current_account.get_balance() != 0:
+                count_failed_transactions += 1
+                count_mismatch_balance += 1
+                sys.stderr.write("Waring: Balance mismatch for account " + account)
+        else:
+            sys.stderr.write("Failed to withdraw 1000 from account: %s " %account)
+            count_failed_transactions += 1
+        
+        
+        
+        print("Logging out account " + account)
+        user_connection.logout_account()
+        if user_connection.current_account != None:
+            print("Logout failed for account " + account)
+            count_logout += 1
+            continue
+        print("Checking is user can delete account...")
+
+    
+    #Gettings the path of the private_key file
+    private_key_path = r"./keys/" + user_connection.name + ".pem"
+    if os.path.exists(private_key_path):
+        private_key_file = open(private_key_path, "r")
+        if user_connection.delete_account(accounts[0], account_info[accounts[0]], accounts[1], private_key_file.read()) == False:
+            print("Unable to delete account " + account)
+            print("Transfer account :" + accounts[0] + " to " + accounts[1])
+            count_delete += 1
+        if not user_connection.delete_account(accounts[1], account_info[account],TESTING_ACCOUNT,private_key_file):
+            print("Checking delete_account failed for account beloging to other user without True parameter")
+            if not user_connection.delete_account(accounts[1], account_info[account],TESTING_ACCOUNT,private_key_file, True):
+                print("Unable to delete account " + account)
+                print("Transfer account :" + accounts[0] + " to " + TESTING_ACCOUNT)
+                count_delete += 1
+        
+print("Test Passed: %d/%d accounts had mismatch balance" %(count_mismatch_balance, len(accounts)))
+print("Test Passed: %d/%d accounts failed to commit transaction" %(count_failed_transactions, len(accounts)))
+
+if count_mismatch_balance+count_failed_transactions > 5:
+    sys.stderr.write("Warning: %d/%d Error occured" %(count_mismatch_balance+count_failed_transactions, len(accounts)))
+    sys.exit(1)
+print("Test Passed: Account APIs are working as intended.")
+print("--------------------------------------------------------------------------------")
+
+print("Test Passed: %d/%d users were unable to login into any accounts." % (count_login, len(random_user_info)))
+print("Test Passed: %d/%d users were unable to logout from any accounts." % (count_logout, len(random_user_info)))
+print("Test Passed: %d/%d users were unable to delete any accounts." % (count_delete, len(random_user_info)))
+
+if count_login + count_logout + count_delete > 5:
+    sys.stderr.write("Warning: %d/%d Errors occured." % (count_login+count_logout+count_delete, len(random_user_info)*4))
+    sys.exit(1)
+
+print("Test Passed: User APIs are working as intended.")
+print("--------------------------------------------------------------------------------")
+
+                    
+            
+    
+    
