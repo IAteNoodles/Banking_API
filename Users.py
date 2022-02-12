@@ -1,6 +1,9 @@
 #A class which can be used to access account apis.
 #This class is filled with only the base apis. Other features maybe added in future.
 from random import randbytes
+import sys
+from wsgiref.simple_server import sys_version
+from xmlrpc.client import SYSTEM_ERROR
 import mariadb
 
 from Accounts import Account
@@ -20,6 +23,9 @@ class User:
         #Fetches the People ID from the Users table.
         connection.execute("SELECT `People ID` FROM User WHERE `ID` = '%s'" % self.user_id)
         self.people_id = connection.fetchone()[0]
+        connection.execute("SELECT `Name` FROM People WHERE `ID` = '%s'" % self.people_id)
+        self.name = connection.fetchone()[0]
+        
         
         #Fetching the accounts linked to this user.
         connection.execute("SELECT `ID` FROM Accounts WHERE `User ID` = '%s'" % (user_id))
@@ -27,14 +33,14 @@ class User:
         self.accounts_no = connection.rowcount
         self.current_account= None
     
-    def check_account(self):
+    def get_accounts(self):
         """
-        
-        Checks if the user has any accounts, and returns True if so, else returns False.
+        Returns a list of all the accounts linked to this user.
+        If the user has no accounts, returns an empty list.
         """
         if self.accounts_no == 0:
-            return False
-        return True
+            return []
+        return self.accounts
 
     def login_account(self, account, password):
         """
@@ -47,7 +53,13 @@ class User:
         Returns:
             bool: True if the account was logged in, else False.
         """
+        
+        # Checks if the account even belongs to the user.
+        if account not in self.accounts:
+            return False
+        
         #Checks if the account and password are correct.
+        
         self.current_account = Account(account, password) 
         if self.current_account.connection:
             return True    
@@ -105,7 +117,7 @@ class User:
         print("The application id for the account is: " + application_id)
         return application_id, account_id
 
-    def delete_account(self, account, password, reciever, private_key):
+    def delete_account(self, account, password, reciever, private_key, confirm = False):
         #"Please enter path of your private key:"))
         #Fetches the public key from the People table, and matches it with the private key.
         from Crypto.PublicKey import RSA
@@ -114,7 +126,15 @@ class User:
         temp=temp.encode('utf-8')
         private_key = RSA.import_key(temp)
 
-        
+        #Checks if the account even belongs to the user.
+        if account not in self.accounts:
+            return False
+        #Checks if reciever belongs to the user.
+        if reciever not in self.accounts and confirm == False:
+            sys.stderr.write("Reciever does not belong to the user.")
+            sys.stderr.write("THIS WILL TRANSFER ALL YOUR FUNDS TO THE RECIEVER")
+            sys.stderr.write("Please add a True parameter to the function to confirm.")
+            return False
         #Matches the public key with the private key.
         public_key = private_key.publickey().export_key()
         #TODO check if the private key is correct..

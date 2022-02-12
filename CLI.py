@@ -21,7 +21,7 @@ def work_as_user(user_id, password):
         if choice == 1:
             
             #Checks if there is atleast one account associated with this user.
-            if not current_login_object.check_account():
+            if current_login_object.get_accounts() == 0:
                 print("You have no account associated with you.\nTo log in, please make an account first")
                 continue
             print("Accounts related to this user are:")
@@ -78,7 +78,7 @@ def work_as_user(user_id, password):
             current_login_object.create_account(input("Password: "))
         elif choice == 3:
             
-            if not current_login_object.check_account():
+            if current_login_object.get_accounts() == 0:
                 return "You have no accounts associated with you."
             index=1
             accounts = []

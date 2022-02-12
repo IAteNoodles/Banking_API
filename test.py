@@ -1,39 +1,50 @@
 #This class will test if all the APIs are working as intended.
-from calendar import c
+from hashlib import sha3_512 as sha3
 import os
 from random import randbytes
 import sys
 from People import generate
 
+def clear_database():
+    connector = mariadb.connect(user="IAteNoodles", passwd="CrazyxNoob@69", database="Banking")
+    connection = connector.cursor()
+    print("--------------------------------------------------------------------------------")
+    #Clearing up the databases, and removing everything.
+    print("Clearing up the databases...")
+    tables = ["Account_Application", "Accounts", "User", "Staff", "People"]
+    for table in tables:
+        print("Truncating table: " + table)
+        connection.execute("DELETE FROM " + table)
+        print("Table truncated.")
+        connector.commit()
+    print("The database has been cleaned.")
+    print("--------------------------------------------------------------------------------")
 print("Checking mariadb connector is configured...")
 import mariadb
 try:
-    connector = mariadb.connect(user="People", passwd="People@Bank", database="Banking")
+    connector = mariadb.connect(user="People", passwd="People@Bank", database="Banking", autocommit=True)
     connection = connector.cursor()
 except mariadb.Error as e:
     print("Test failed: mariadb connector is not configured.")
     raise SystemExit("Error %d: %s" % (e.args[0], e.args[1]))
 
 print("Test passed: mariadb connector is configured.")
-connection.execute("Delete from People where Name in ('Charles', 'Winnie', 'Micheal')")
-connection.execute("insert into `Staff` values ('fbc97453079eabefaffadcaed7ceaf2c155feffef07869043ef7ad84b9c69a8e','75a908fc-8b41-11ec-8e4d-d61a00b1794b','a1eb8cee0626bd9891f4f1ae76a6bf11b96100fbce774e8b48634f67e6756812d1763fe1ff4593b6ee1e9e5c4b350f1a1fad9bf87e927f850197d6c2c2248f74',2)")
-connector.commit()
 #Checking that People clas is working as intended.
 list_of_people: tuple = ("Charles",
                   "Winnie",
-                  "Micheal",
-                  "Charlie",
-                  "William",
-                  "Bertie",
-                  "Juan",
-                  "Iva",
-                  "Adelaide",
-                  "Ada",
-                  "Daniel",
-                  "Christina",
-                  "Lilly",
-                  "Isaiah",
-                  "Marguerite",
+                  #"Micheal",
+                  #"Charlie",
+                  #"William",
+                  #"Bertie",
+                  #"Juan",
+                  #"Iva",
+                  #"Adelaide",
+                  #"Ada",
+                  #"Daniel",
+                  #"Christina",
+                  #"Lilly",
+                  #"Isaiah",
+                  #"Marguerite",
                   "Gary")
                  
 
@@ -44,25 +55,34 @@ for person in list_of_people:
 
 
 print("Checking that the people have been added to the People table.")
-
-print(list_of_people)
 connection.execute("SELECT * FROM People where Name in {}".format(list_of_people))
 connection.fetchall()
 if connection.rowcount == len(list_of_people):
     print("Test passed: People table is correctly populated.")
 else:
     print("Test failed: People table is not correctly populated.")
+    print("Expected: {}".format(len(list_of_people)))
+    print("Actual: {}".format(connection.rowcount))
+    clear_database() 
     sys.exit(1)
     
 print("Test passed: People APIs are working as intended.")
 
 #Checking the Staff APIs are working as intended.
-
+#Generating a new record in People table
+random_password = randbytes(16).hex()
+random_staff_id = randbytes(16).hex()
 test_user = {
-    "staff_id":"75a908fc-8b41-11ec-8e4d-d61a00b1794b",
-    "passwd":"IAteNoodles",
-    "type":"Admin"
+    "name": "ROOT@BANK",
+    "passwd": random_password,
+    "staff_id": random_staff_id,
+    "type": "Admin"
     }
+test_user["people_id"] = generate(test_user["name"])
+#Inserting the new record into the Staff table.
+hashed_passwd = sha3(test_user["passwd"].encode()).hexdigest()
+connection.execute("INSERT INTO Staff (`People ID`, `ID`, `Password`, `Type`) VALUES ('%s', '%s', '%s', %d)" % (test_user["people_id"], test_user["staff_id"], hashed_passwd, 2))
+connector.commit()
 
 print("Connecting with ROOT@Bank...")
 from Staffs import  Admin
@@ -74,6 +94,7 @@ if test_user["object"].get_type() == test_user["type"]:
     print("Test passed: Staff type is correct.")
 else:
     print("Test failed: Staff type is incorrect.")
+    clear_database() 
     sys.exit(1)
 
 print("Adding a new admin (BANKING@ADMIN) to the database...")
@@ -103,6 +124,7 @@ if new_admin_connection.get_type() == "Admin":
     print("Test passed: BANKING@ADMIN is an admin.")
 else:
     print("Test failed: BANKING@ADMIN is not an admin")
+    clear_database() 
     sys.exit(1)
 
 print("Addming a bunch of users to the Bank...")
@@ -162,6 +184,7 @@ for application in applications:
 print("BANKING@ADMIN accepted %d/%d applications" % (no_of_applications_accepted, len(applications)))
 if len(applications) - no_of_applications_accepted > 5:
     print("Test failed: BANKING@ADMIN is not able to accept all the applications.")
+    clear_database() 
     sys.exit(1)
 
 print("Test passed: BANKING@ADMIN is able to accept the applications.")
@@ -186,6 +209,7 @@ for id in list_of_ids:
 
 if len(list_of_ids) - count > 5:
     print("Test failed: BANKING@ADMIN is not able to add all the staffs.")
+    clear_database() 
     sys.exit(1)
 
 print("Test passed: BANKING@ADMIN is able to add the staffs.")
@@ -297,6 +321,7 @@ print("Test Passed: %d/%d accounts failed to commit transaction" %(count_failed_
 
 if count_mismatch_balance+count_failed_transactions > 5:
     sys.stderr.write("Warning: %d/%d Error occured" %(count_mismatch_balance+count_failed_transactions, len(accounts)))
+    clear_database() 
     sys.exit(1)
 print("Test Passed: Account APIs are working as intended.")
 print("--------------------------------------------------------------------------------")
@@ -307,10 +332,24 @@ print("Test Passed: %d/%d users were unable to delete any accounts." % (count_de
 
 if count_login + count_logout + count_delete > 5:
     sys.stderr.write("Warning: %d/%d Errors occured." % (count_login+count_logout+count_delete, len(random_user_info)*4))
+    clear_database() 
     sys.exit(1)
 
 print("Test Passed: User APIs are working as intended.")
-print("--------------------------------------------------------------------------------")
+clear_database()
+print("Please run Start.py to configure the database")
+
+
+
+
+
+
+
+
+
+
+
+
 
                     
             

@@ -9,11 +9,13 @@ class Staff:
 
     def __init__(self, staff_id, password):
         from hashlib import sha3_512 as sha3
-        password = sha3(password.encode()).hexdigest()
         connection.execute(
-            "SELECT * FROM Staff WHERE ID = %s AND Password = %s", (staff_id, password))
+            "SELECT `Password` FROM Staff WHERE ID = '%s'" % staff_id)
+        hash = sha3(password.encode()).hexdigest()
+        db_hash = connection.fetchone()[0]
+        print(db_hash, hash)
         # Checks if there is a user with the given ID and password.
-        if connection.fetchone() is None:
+        if db_hash != hash:
             raise ValueError("Invalid staff ID or password")
 
         self.user_id = staff_id
