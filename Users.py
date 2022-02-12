@@ -89,16 +89,6 @@ class User:
         #Generates a random account number.
         account_id = randbytes(20).hex()    
         
-        #Checks if there is already an application for this account.
-        connection.execute("SELECT * FROM Account_Application WHERE Account_ID = '%s'" % account_id)
-        if connection.fetchone() is not None:
-            print("There is already an application for this account.")
-            print("Overwritting previous application...")
-            #Update the application with the new password and changes the CreationTime.
-            connection.execute("UPDATE Account_Application SET `CreationTime` = NOW(), `Hash` = '%s' WHERE Account_ID = '%s'" % (password, account_id))
-            connector.commit()
-            print("The previous application has been overwritten.")
-            return 
         #Generates a 16 character random string for application id.
         application_id = randbytes(8).hex()
         while(True):
@@ -123,7 +113,6 @@ class User:
         #Convert temp to bytes.
         temp=temp.encode('utf-8')
         private_key = RSA.import_key(temp)
-
         #Checks if the account even belongs to the user.
         if account not in self.accounts:
             return False

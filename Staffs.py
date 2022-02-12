@@ -24,6 +24,7 @@ class Staff:
         self.type = 0
         print("Logged in as staff with ID %s and type %s" %
               (self.user_id, self.type))
+        return True
         
 
     def get_type(self): 
@@ -38,18 +39,19 @@ class Staff:
         if connection.fetchone() is None:
             print("There is no record of the person with ID %s" % people_id)
             print("User not added.")
-            return "Exiting..."
+            return False
         #Checks if there is a user with the given ID
         connection.execute("SELECT * FROM User WHERE ID = '%s'" % user_id)
         if not connection.fetchone() is None:
             print("There is already a user with ID %s" % user_id)
             print("User not added.")
-            return "Exiting..."
+            return False
         print("Adding user...")
         connection.execute(
             "INSERT INTO User (`People ID`, `ID`, `Password`) VALUES ('%s', '%s', '%s')" % (people_id, user_id, hashed_passwd))
         connector.commit()
         print("Added user with ID %s" % user_id)
+        return True
 
     def change_application(self, application_id: str, accept: bool):
         """
@@ -67,7 +69,8 @@ class Staff:
         # Fetches the application from the database and prints the details.
         connection.execute("SELECT * FROM Account_Application WHERE ID = '%s'" % application_id)
         details = connection.fetchone()
-
+        if details is None:
+            return False
         # Print the details of the application. 1st column is the application_id, 2nd is the user_id, 3rd is the account_id, 4th is the hash of the password, 5th is the time of the creation.
         print("Application ID: " + application_id)
         print("User ID: " + str(details[1]))
@@ -122,7 +125,6 @@ class Manager(Staff):
         """
         if staff_type > self.type:
             print("You are not authorized to add this staff")
-            print("Exiting...")
             return False
         print("Adding staff...")
         connection.execute("INSERT INTO Staff (`People ID`, `ID`, `Password`, `Type`) VALUES ('%s', '%s', '%s', %s)" %
@@ -146,7 +148,6 @@ class Admin(Manager):
         connection.execute("SELECT `Type` FROM Staff WHERE ID = '%s'" % staff_id)
         if connection.fetchone()[0] > self.type:
             print("You are not authorized to remove this staff")
-            print("Exiting...")
             return False
         print("This will remove staff with ID %s" % staff_id)
         print("Removing staff...")

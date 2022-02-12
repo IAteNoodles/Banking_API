@@ -12,7 +12,7 @@ class Account:
         #Checks if there is a account with the given ID and password.
         
         if connection.fetchone() is None:
-            self.connection = False    
+            raise ValueError("Invalid account ID or password")
 
         self.account_id = account_id
         self.hash = password    
@@ -54,7 +54,7 @@ class Account:
             balance = self.balance - amount
         else:
             print("Invalid mode\nValid modes are: 0 for withdraw, 1 for deposit")
-            return False, "Invalid transaction mode"
+            return False
         
         #Check if the account has enough money to make the transaction.
         if balance < 0:
@@ -67,7 +67,8 @@ class Account:
         connection.execute("UPDATE Accounts SET Balance = %s WHERE ID = '%s'" % (balance, self.account_id))
         connector.commit()
         self.balance = balance
-        return True, "New balance: %s" % self.balance
+        print("New balance: %s" % self.balance)
+        return True, 
     
     def send_money(self, reciever, amount):
         """
