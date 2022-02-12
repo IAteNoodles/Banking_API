@@ -2,8 +2,6 @@
 #This class is filled with only the base apis. Other features maybe added in future.
 from random import randbytes
 import sys
-from wsgiref.simple_server import sys_version
-from xmlrpc.client import SYSTEM_ERROR
 import mariadb
 
 from Accounts import Account
@@ -82,7 +80,7 @@ class User:
             password: The password to be used for the account.
         
         Returns:
-            The account number of the account created.
+            The account number of the account created along with the application id
         """
         
         print("Generating account application for you...")
