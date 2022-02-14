@@ -130,7 +130,6 @@ def populate(connector, connection):
     #Creating account applications
     for name in people_data:
         user_data = people_data[name]
-        print(user_data)
         user_connection = User(user_data[1], user_data[2])
         password = randbytes(16).hex()
         account_id, application_id = user_connection.create_account(password)
@@ -144,10 +143,22 @@ def populate(connector, connection):
         ROOT.change_application(people_data[name][5],True)
     print("Populated Account Table")
     connector.commit()
+    data = dict()
     print("------------------------------------------------------")
     print("Populated Database over")
-    data = json.dumps(people_data, sort_keys=True, indent=5)
+    temp = dict()
+    for name in people_data:
+        temp[name]={
+            "People_ID":people_data[name][0],
+            "User_ID":people_data[name][1],
+            "Password":people_data[name][2],
+            "Account_ID":people_data[name][3],
+            "Password":people_data[name][4],
+            "Application_ID":people_data[name][5],
+        }
+    data = json.dumps(temp, sort_keys=True, indent=5)
     open(r"./config/people_data.txt", "w").write(data)
+    
     """
     Format for data:
         name = people_id,

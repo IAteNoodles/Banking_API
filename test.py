@@ -309,12 +309,16 @@ for user in random_user_info:
             print("Unable to delete account " + account)
             print("Transfer account :" + accounts[0] + " to " + accounts[1])
             count_delete += 1
+        else:
+            print("Successfully deleted account " + account)
         if not user_connection.delete_account(accounts[1], account_info[account],TESTING_ACCOUNT,private_key_file):
             print("Checking delete_account failed for account beloging to other user without True parameter")
             if not user_connection.delete_account(accounts[1], account_info[account],TESTING_ACCOUNT,private_key_file, True):
                 print("Unable to delete account " + account)
                 print("Transfer account :" + accounts[0] + " to " + TESTING_ACCOUNT)
                 count_delete += 1
+        else:
+            print("Successfully deleted account")
         
 print("Test Passed: %d/%d accounts had mismatch balance" %(count_mismatch_balance, len(accounts)))
 print("Test Passed: %d/%d accounts failed to commit transaction" %(count_failed_transactions, len(accounts)))
