@@ -5,7 +5,7 @@ import sys
 import mariadb
 
 from Accounts import Account
-connector = mariadb.connect(user='User', host="iatenoodles", password='User@Bank', database='Banking')
+connector = mariadb.connect(user='User', host="localhost", password='User@Bank', database='Banking')
 connection = connector.cursor()
 class User:
     def __init__(self, user_id, password):
