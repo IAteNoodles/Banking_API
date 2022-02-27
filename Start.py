@@ -1,6 +1,5 @@
 import json
 from random import randbytes
-from secrets import randbits
 
 
 def start_server(USERNAME, PASSWORD, DATABASE_NAME):

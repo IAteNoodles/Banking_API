@@ -1,0 +1,2 @@
+mariadb==1.0.10
+pycryptodome==3.14.1

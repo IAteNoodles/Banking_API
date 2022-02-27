@@ -19,6 +19,7 @@ A Banking Management System written in python for Term-II Computer Project.
 # Modules used
 1. hashlib for sha3_512 (Used to store passwords)
 2. mariadb (A connector for mariadb written in C)
+3. pycryptodome for Public and Private key generation.
 
 # Working
 This project is basically a bunch of APIs linked with one another to make a BARE-BONE Banking Management System.
@@ -49,10 +50,17 @@ NOTE: These specs are not necessary for the working for the APIs.
 # How to use.
 1. Install Python 
 2. Install Mariadb
-3. Install mariadb module using `python3 -m pip install mariadb`
+3. Install the required modules using requirements.txt
+   `python3 -m pip -r requirements.txt`
 4. Clone the repository and cd into it.
-5. Run the script to initialize the database and create dummy tables.
-5. Run `python3 CLI.py` in the terminal
+5. Run the `Start.py` script to initialize the database and create dummy tables.
+6. Test the project by running the script `test.py`
+7. Relaunch `Start.py` after running `test.py` as the script will truncate all the existing tables.
+8. Run `python3 CLI.py` in the terminal.
+
+# Note
+
+Details of the dummy users are stored in config/people_date.txt
 
 # Contribution
 I am really grateful to everyone who has contributed in any of the above specified projects, without any one of them this entire project would be much harder to made and test.
