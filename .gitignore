@@ -1,6 +1,5 @@
 __pycache__/
 *.pem
-*.txt
 *.log
 lib/
 bin/
