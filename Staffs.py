@@ -2,7 +2,7 @@
 # This class is filled with only the base apis. Other features maybe added in future.
 import mariadb
 connector = mariadb.connect(
-    user="Staff", passwd="Account@Bank", database="Banking")
+    user="Staff", passwd="Staff@Bank", database="Banking")
 connection = connector.cursor()
 
 class Staff:
