@@ -1,4 +1,4 @@
-
+from CheckSQL import sql_injection_check as check
 #The interface to interact with the apis.
 def work_as_user(user_id, password):
     from Users import User
@@ -12,7 +12,7 @@ def work_as_user(user_id, password):
         print("2. Create a new account")
         print("3. Delete a account")
         print("Anything else to log out")
-        choice = int(input("Enter your choice: "))
+        choice = int(check("Enter your choice: "))
         if choice == 1:
             
             #Checks if there is atleast one account associated with this user.
@@ -27,12 +27,12 @@ def work_as_user(user_id, password):
                 index+=1
             
             #Asks the user to enter the account number to login.
-            relative_account = int(input("Enter the account number to login: "))
+            relative_account = int(check("Enter the account number to login: "))
             if relative_account > len(current_login_object.accounts) or relative_account < 1:
                 return "Invalid account number"
             
             #Asks the user to enter the password to login.
-            password = input("Enter the password to login: ")
+            password = check("Enter the password to login: ")
             
             print("Logging in...")
             current_login_object.login_account(current_login_object.accounts[relative_account-1][0],password)
@@ -48,18 +48,18 @@ def work_as_user(user_id, password):
                 print("3. Fetch balance")
                 print("4. Transfer money")
                 print("To log out of the current account press anything else.")
-                choice = input("Enter your choice: ")
+                choice = check("Enter your choice: ")
                 if choice == "1":
-                    amount = int(input("Enter the amount to withdraw: "))
+                    amount = int(check("Enter the amount to withdraw: "))
                     current_login_object.current_account.commit_transaction(amount,0)
                 elif choice == "2":
-                    amount = int(input("Enter the amount to deposit: "))
+                    amount = int(check("Enter the amount to deposit: "))
                     current_login_object.current_account.commit_transaction(amount,1)
                 elif choice == "3":
                     current_login_object.current_account.get_balance()
                 elif choice == "4":
-                    transfering_account_id = input("Enter the account id to transfer to: ")
-                    amount = int(input("Enter the amount to transfer: "))
+                    transfering_account_id = check("Enter the account id to transfer to: ")
+                    amount = int(check("Enter the amount to transfer: "))
                     if current_login_object.current_account.send_money(transfering_account_id,amount):
                         print("Money transfered successfully")
                     else:
@@ -67,10 +67,10 @@ def work_as_user(user_id, password):
                     
                 else:
                     current_login_object.logout_account()
-                    break;
+                    break
                 
         elif choice == 2:
-            current_login_object.create_account(input("Password: "))
+            current_login_object.create_account(check("Password: "))
         elif choice == 3:
             
             if current_login_object.get_accounts() == 0:
@@ -81,24 +81,24 @@ def work_as_user(user_id, password):
                 accounts.append(account_id[0])
                 print(index, ": ", account_id[0])
                 index+=1
-            relative_account = int(input("Enter the account number to delete: "))
+            relative_account = int(check("Enter the account number to delete: "))
             if relative_account > len(accounts) or index-1 < 2:
                 print("Invalid account number. You need to have at least 2 accounts for this operation.")
                 return "User didn't have enough accounts."
-            choice=input("THIS WILL YOUR ACCOUNT, ARE YOU SURE YOU WANT TO DELETE THIS ACCOUNT? (y?)")
+            choice=check("THIS WILL YOUR ACCOUNT, ARE YOU SURE YOU WANT TO DELETE THIS ACCOUNT? (y?)")
             if choice == "n":
                 print("Command Aborted...")
             
-            password = input("Password of the account: ")            
+            password = check("Password of the account: ")            
             print("ALL YOUR FUNDS WILL BE TRANSFERED TO THE FIRST ACCOUNT ASSOCIATED WITH YOU.")
-            choice=input("Do you wish to change the account to transfer funds to? (n?)")
+            choice=check("Do you wish to change the account to transfer funds to? (n?)")
             if choice == "y":
-                account_number=input("Account number to transfer funds to: ")
+                account_number=check("Account number to transfer funds to: ")
                 account_id = accounts[account_number-1]
             else:
                 account_id = accounts[1] if relative_account == 1 else accounts[0]
             print("Transferring funds from account: " + accounts[relative_account-1] + " to account: " + account_id + "...")
-            private_key=open(input("Path to private key: "))
+            private_key=open(check("Path to private key: "))
             current_login_object.delete_account(accounts[relative_account-1], password, account_id, private_key)
             
         else:
@@ -114,10 +114,12 @@ def work_as_staff(staff_id, password):
     from Staffs import Staff, Manager, Admin
     import mariadb
     connector = mariadb.connect(
-    user="Staff", passwd="Account@Bank", database="Banking")
+    user="Staff", passwd="Staff@Bank", database="Banking")
     connection = connector.cursor()
     #Checks the type of the staff and creates a new instance of the appropriate staff class.
+    print(staff_id)
     connection.execute("SELECT Type FROM Staff WHERE ID = '%s'" % staff_id)
+
     staff_type = connection.fetchone()[0]
     if staff_type == 0:
         current_login_object = Staff(staff_id, password)
@@ -155,22 +157,22 @@ def work_as_staff(staff_id, password):
         print("To log out of the current staff press anything else.")
 
         
-        choice = input("Please enter your choice: ")
+        choice = check("Please enter your choice: ")
     
         #Uses if elif else to call the appropriate function.
         
         if choice == "1":
             #WORKS
-            people_id = input("Enter the people ID: ") #Varchar(64)
-            user_id = input("Please enter the user id: ") #Varchar(36) 
-            hashed_passwd = input("Please enter the hashed password: ") #Varchar(128)
+            people_id = check("Enter the people ID: ") #Varchar(64)
+            user_id = check("Please enter the user id: ") #Varchar(36) 
+            hashed_passwd = check("Please enter the hashed password: ") #Varchar(128)
             current_login_object.add_user(people_id, user_id, hashed_passwd)
             
         elif choice == "2":
             #WORKS
-            choice = input("Do you want to list every application opened at present? (y?)")
+            choice = check("Do you want to list every application opened at present? (y?)")
             if choice == "n":
-                application_id = input("Please enter the application id: ")
+                application_id = check("Please enter the application id: ")
             else:
                 connection.execute("SELECT `ID`, `User_ID`, `CreationTime`  FROM Account_Application")
                 application_ids = connection.fetchall()
@@ -184,21 +186,21 @@ def work_as_staff(staff_id, password):
                 for application_id in application_ids:
                     print(index,": ",application_id)
                     
-                application_id = input("Please enter the application id: ")
-                accept = True if input("Do you want to accept this application? (y?)") == "y" else False
+                application_id = check("Please enter the application id: ")
+                accept = True if check("Do you want to accept this application? (y?)") == "y" else False
             current_login_object.change_application(application_id, accept)
             
         elif choice == "3":
             #WORKS
-            people_id = input("Enter the people ID: ") #Varchar(64)
-            staff_id = input("Please enter the staff id: ") #Varchar(36) 
-            hashed_passwd = input("Please enter the hashed password: ")
-            staff_type = int(input("0: Staff, 1: Manager, 2: Admin:\nEnter the staff type: "))
+            people_id = check("Enter the people ID: ") #Varchar(64)
+            staff_id = check("Please enter the staff id: ") #Varchar(36) 
+            hashed_passwd = check("Please enter the hashed password: ")
+            staff_type = int(check("0: Staff, 1: Manager, 2: Admin:\nEnter the staff type: "))
             current_login_object.add_staff(people_id, staff_id, hashed_passwd, staff_type)
             
         elif choice == "4":
             #WORKS
-            staff_id = input("Please enter the staff id: ")
+            staff_id = check("Please enter the staff id: ")
             current_login_object.remove_staff(staff_id)
         
         else:
@@ -215,7 +217,7 @@ if __name__ == '__main__':
     print("Enter the number of the function you want to use:")
     print("1: Help")
     print("2: Login")
-    choice = int(input("Enter your choice: "))
+    choice = int(check("Enter your choice: "))
     if choice == 1:
         from Help import get_help
         get_help()
@@ -223,15 +225,15 @@ if __name__ == '__main__':
     elif choice == 2:
         print("This is the User login page")
         print("Are you a user? (y?)")
-        choice = input("Enter your choice: ")
+        choice = check("Enter your choice: ")
         if choice == "y":
-            user_id = input("Enter your id: ")
-            password = input("Enter your password: ")
+            user_id = check("Enter your id: ")
+            password = check("Enter your password: ")
             from Users import User
             work_as_user(user_id, password)
         else:
             print("This is the staff login page")
-            staff_id = input("Enter your id: ") #Varchar(36) 
-            password = input("Enter your password: ") #Varchar(128)
+            staff_id = check("Enter your id: ") #Varchar(36) 
+            password = check("Enter your password: ") #Varchar(128)
             work_as_staff(staff_id, password)
         
