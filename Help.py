@@ -101,6 +101,11 @@ def get_help():
           reciever(str): The recipient which will receive the funds. VARCHAR(36)  
           amount(int): The amount to be sent from the account.""")
     print("----------------------------------------------------------------------------------------------------------------------", end="\n")
+    print("CheckSQL.py: \nThis module contains the API which screens the SQL queries for security.")
+    print("It contains the following function:")
+    print("""check_sql(sql_query): Checks the SQL query for security. Returns True if the query is safe else raises PossibleSQLInjectionException.
+          sql_query(str): The SQL query to be checked.""")
+    print("----------------------------------------------------------------------------------------------------------------------", end="\n")
     print("This marks the end of the help page.")
     
 if __name__ == '__main__':

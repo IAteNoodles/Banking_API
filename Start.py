@@ -96,6 +96,8 @@ def populate(connector, connection):
     people_data = dict()
     for name in people_name:
         from People import generate
+        name = name.strip()
+        print("Generating Public Key for %s" % name)
         people_data[name] = generate(name)
     print("Populated People Table")
     connector.commit()
