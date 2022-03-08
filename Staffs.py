@@ -13,7 +13,6 @@ class Staff:
             "SELECT `Password` FROM Staff WHERE ID = '%s'" % staff_id)
         hash = sha3(password.encode()).hexdigest()
         db_hash = connection.fetchone()[0]
-        print(db_hash, hash)
         # Checks if there is a user with the given ID and password.
         if db_hash != hash:
             raise ValueError("Invalid staff ID or password")

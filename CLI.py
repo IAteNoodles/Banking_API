@@ -23,7 +23,7 @@ def work_as_user(user_id, password):
             index = 1
             #Provides a list of the accounts linked to this user.
             for account in current_login_object.accounts:
-                print(index, ": " + account[0])
+                print(index, ": " + account)
                 index+=1
             
             #Asks the user to enter the account number to login.
@@ -35,12 +35,10 @@ def work_as_user(user_id, password):
             password = check("Enter the password to login: ")
             
             print("Logging in...")
-            current_login_object.login_account(current_login_object.accounts[relative_account-1][0],password)
-            if current_login_object.current_account == None:
+            if current_login_object.login_account(current_login_object.accounts[relative_account-1],password) == False:
                 return "Please make sure that you have an account. If you already have submitted an account, please wait for the application to be verified."
             print("Logged in to account: ", account)
             while(True):
-                print("You have successfully logged in to account: ", current_login_object.current_account.account_id)
                 print("Your balance is: " + str(current_login_object.current_account.balance))
                 print("Options avaliable to you are:")
                 print("1. Withdraw money")
@@ -78,8 +76,8 @@ def work_as_user(user_id, password):
             index=1
             accounts = []
             for account_id in current_login_object.accounts:
-                accounts.append(account_id[0])
-                print(index, ": ", account_id[0])
+                accounts.append(account_id)
+                print(index, ": ", account_id)
                 index+=1
             relative_account = int(check("Enter the account number to delete: "))
             if relative_account > len(accounts) or index-1 < 2:
@@ -98,7 +96,7 @@ def work_as_user(user_id, password):
             else:
                 account_id = accounts[1] if relative_account == 1 else accounts[0]
             print("Transferring funds from account: " + accounts[relative_account-1] + " to account: " + account_id + "...")
-            private_key=open(check("Path to private key: "))
+            private_key=open(input("Path to private key: ")) #Possible vector for sql injection. Can't seem to get it working with checking the file path.
             current_login_object.delete_account(accounts[relative_account-1], password, account_id, private_key)
             
         else:
@@ -117,7 +115,6 @@ def work_as_staff(staff_id, password):
     user="Staff", passwd="Staff@Bank", database="Banking")
     connection = connector.cursor()
     #Checks the type of the staff and creates a new instance of the appropriate staff class.
-    print(staff_id)
     connection.execute("SELECT Type FROM Staff WHERE ID = '%s'" % staff_id)
 
     staff_type = connection.fetchone()[0]
@@ -175,19 +172,23 @@ def work_as_staff(staff_id, password):
                 application_id = check("Please enter the application id: ")
             else:
                 connection.execute("SELECT `ID`, `User_ID`, `CreationTime`  FROM Account_Application")
-                application_ids = connection.fetchall()
+                applications = connection.fetchall()
                 index = 1
                 
                 #Checks if there are any opened applications
-                if len(application_ids) ==0:
+                if len(applications) ==0:
                     print("There are no applications opened at present.")
                     continue
                 
-                for application_id in application_ids:
-                    print(index,": ",application_id)
+                for application_data in applications:
+                    print(index,":")
+                    print("\t\t","Application ID: ",application_data[0])
+                    print("\t\t","User ID: ",application_data[1])
+                    print("\t\t","Date of creation: ",application_data[2])
+                    index += 1
                     
                 application_id = check("Please enter the application id: ")
-                accept = True if check("Do you want to accept this application? (y?)") == "y" else False
+                accept = False if check("Do you want to accept this application? (Y/n?)") == "n" else True
             current_login_object.change_application(application_id, accept)
             
         elif choice == "3":
@@ -224,16 +225,15 @@ if __name__ == '__main__':
         
     elif choice == 2:
         print("This is the User login page")
-        print("Are you a user? (y?)")
-        choice = check("Enter your choice: ")
-        if choice == "y":
-            user_id = check("Enter your id: ")
-            password = check("Enter your password: ")
-            from Users import User
-            work_as_user(user_id, password)
-        else:
+        print("Are you a user? (Y/n?)")
+        choice = check("Enter your choice: ").lower()
+        if choice == "n":
             print("This is the staff login page")
             staff_id = check("Enter your id: ") #Varchar(36) 
             password = check("Enter your password: ") #Varchar(128)
             work_as_staff(staff_id, password)
-        
+        else:
+            user_id = check("Enter your id: ")
+            password = check("Enter your password: ")
+            from Users import User
+            work_as_user(user_id, password) 

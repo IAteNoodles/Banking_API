@@ -12,7 +12,8 @@ class User:
         from hashlib import sha3_512 as sha3
         password = sha3(password.encode()).hexdigest()
         connection.execute("SELECT * FROM User WHERE ID = '%s' AND Password = '%s'" % (user_id, password))
-        if connection.fetchone() is None:
+        temp = connection.fetchall()
+        if temp is None:
             raise ValueError("Invalid user ID or password")
         
         self.user_id = user_id
@@ -28,7 +29,17 @@ class User:
         #Fetching the accounts linked to this user.
         connection.execute("SELECT `ID` FROM Accounts WHERE `User ID` = '%s'" % (user_id))
         self.accounts = connection.fetchall()
+        
+        #Making the list of accounts easier to access.
+        temp_list = list()
+        for account in self.accounts:
+            temp_list.append(account[0])
+        self.accounts = temp_list
+        
+        #Fetching the number of accounts linked to this user.
         self.accounts_no = connection.rowcount
+        
+        #Defaults to no account logged in.
         self.current_account= None
     
     def get_accounts(self):

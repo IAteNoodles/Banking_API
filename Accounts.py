@@ -50,6 +50,10 @@ class Account:
         #Check if the account has entered a valid mode.
         if mode == 1:
             balance = self.balance + amount
+            if amount < 0:
+                print("You cannot deposit a negative amount.")
+                return False
+
         elif mode == 0:
             balance = self.balance - amount
         else:

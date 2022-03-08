@@ -95,10 +95,14 @@ def populate(connector, connection):
     people_name=open(r"./config/People_Name.txt").readlines()
     people_data = dict()
     for name in people_name:
+        print()
         from People import generate
         name = name.strip()
         print("Generating Public Key for %s" % name)
         people_data[name] = generate(name)
+        print("Public Key for %s generated" % name)
+        print("------------------------------------------------------")
+    print("------------------------------------------------------")
     print("Populated People Table")
     connector.commit()
     print("------------------------------------------------------")
@@ -121,6 +125,7 @@ def populate(connector, connection):
         password = randbytes(16).hex()
         people_id = people_data[name]
         people_data[name]=[people_id,user_id,password]
+        print(user_id, password)
         ROOT.add_user(people_id, user_id, sha3(password.encode()).hexdigest())
     print("Populated User Table")
     connector.commit()
@@ -152,10 +157,9 @@ def populate(connector, connection):
         temp[name]={
             "People_ID":people_data[name][0],
             "User_ID":people_data[name][1],
-            "Password":people_data[name][2],
+            "User Password":people_data[name][2],
             "Account_ID":people_data[name][3],
-            "Password":people_data[name][4],
-            "Application_ID":people_data[name][5],
+            "Account Password":people_data[name][4],
         }
     data = json.dumps(temp, sort_keys=True, indent=5)
     open(r"./config/people_data.txt", "w").write(data)
@@ -166,7 +170,7 @@ def populate(connector, connection):
         user_id,
         password,
         account_id,
-        application_id
+        account_password
     """
 
 
