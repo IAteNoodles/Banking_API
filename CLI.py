@@ -96,7 +96,7 @@ def work_as_user(user_id, password):
             else:
                 account_id = accounts[1] if relative_account == 1 else accounts[0]
             print("Transferring funds from account: " + accounts[relative_account-1] + " to account: " + account_id + "...")
-            private_key=open(input("Path to private key: ")) #Possible vector for sql injection. Can't seem to get it working with checking the file path.
+            private_key=open(input("Path to private key: ")) #SQL injection checking isn't required here as this statement has no interactions with the database.
             current_login_object.delete_account(accounts[relative_account-1], password, account_id, private_key)
             
         else:
