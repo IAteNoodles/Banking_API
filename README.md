@@ -1,5 +1,5 @@
 # Banking_API
-A Banking Management System written in python for Term-II Computer Project.
+A Banking Management System written in python.
 
 # Software used
 1. Python 3.10.2 (A high-level easy to use scripting language)
@@ -66,16 +66,3 @@ Details of the dummy users are stored in config/people_date.txt
 I am really grateful to everyone who has contributed in any of the above specified projects, without any one of them this entire project would be much harder to made and test.
 The list of sites I visited during the making will be References.md 
 
-# Made by
-1. Abhijit Kumar Singh (Leader)
-2. Shashikant Yadav
-3. Khushi Yadav
-
-# Dropped repositories
-During the making, I had dropped the project many times, mainly due to lack of support or the code was too complicated to maintain. I couldn't manage them to find them all, but I think it is worth to mention them as they were the building ground of this final project.
-1. Banking: https://github.com/IAteNoodles/Banking
-2. Banking_CL: https://github.com/IAteNoodles/Banking_CL
-3. KV_Tinsukia_CS_Project: https://github.com/IAteNoodles/KV_Tinsukia_CS_Project
-
-# Making of the project.
-Check RANT.md for the entire journey of this project. (Under production)
